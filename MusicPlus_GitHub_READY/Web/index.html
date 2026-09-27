@@ -1,0 +1,26 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Music+</title><style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#fff;color:#111;overflow:hidden}
+.bg{position:fixed;inset:0;background:url("wallpaper.jpg") center/cover;opacity:.13;filter:blur(2px)}
+.app{position:relative;height:100vh;display:flex;flex-direction:column;align-items:center;padding:22px}
+.logo{width:85px;height:85px;border-radius:50%;object-fit:cover}
+.time{position:absolute;right:24px;top:20px;color:#777}.search{width:min(700px,90%);padding:14px 20px;border:1px solid #ddd;border-radius:28px;margin:25px 0;background:#fff}
+.card{width:min(760px,94%);background:#ffffffee;border:1px solid #eee;border-radius:20px;padding:22px;box-shadow:0 10px 40px #0001}
+button{border:0;border-radius:18px;padding:12px 18px;margin:5px;background:#f4f4f4;cursor:pointer}button.play{background:#111;color:#fff}
+#songs{max-height:45vh;overflow:auto}.song{display:flex;justify-content:space-between;padding:14px;border-bottom:1px solid #eee}
+</style></head><body><div class=bg></div><div class=app><img class=logo src=logo.gif><div class=time id=time></div><input class=search id=search placeholder="Поиск по моей музыке"><div class=card>
+<h1>Music+</h1><p>Бесплатный музыкальный плеер. Добавляй свои треки и слушай их в фоне, пока браузер/ОС это поддерживает.</p>
+<input id=files type=file accept="audio/*" multiple hidden><button onclick="files.click()">Добавить музыку</button>
+<div id=songs></div><div><button onclick=prev()>⏮</button><button class=play onclick=toggle() id=play>▶</button><button onclick=next()>⏭</button></div>
+<input id=progress type=range min=0 max=100 value=0 style="width:90%"><audio id=audio controls style="width:100%"></audio>
+</div></div><script>
+const a=document.getElementById('audio'),list=document.getElementById('songs'),files=document.getElementById('files'),q=document.getElementById('search'),p=document.getElementById('progress');
+let songs=[],i=-1;
+function clock(){let d=new Date(Date.now()+3*3600000);document.getElementById('time').textContent='МСК '+d.toISOString().slice(11,19)}setInterval(clock,1000);clock();
+files.onchange=e=>{[...e.target.files].forEach(f=>songs.push({name:f.name,url:URL.createObjectURL(f)}));render()};
+function render(){list.innerHTML='';songs.filter(s=>s.name.toLowerCase().includes(q.value.toLowerCase())).forEach((s,n)=>{let d=document.createElement('div');d.className='song';d.innerHTML=`<span>${s.name}</span><button>▶</button>`;d.querySelector('button').onclick=()=>play(songs.indexOf(s));list.appendChild(d)})}q.oninput=render;
+function play(n){i=n;a.src=songs[i].url;a.play();document.getElementById('play').textContent='⏸'}
+function toggle(){if(a.paused){a.play();play.textContent='⏸'}else{a.pause();play.textContent='▶'}}
+function next(){if(!songs.length)return;play((i+1)%songs.length)}function prev(){if(!songs.length)return;play((i-1+songs.length)%songs.length)}
+a.ontimeupdate=()=>p.value=a.duration?100*a.currentTime/a.duration:0;p.oninput=()=>{if(a.duration)a.currentTime=p.value/100*a.duration};a.onended=next;render();
+</script></body></html>
